@@ -1,0 +1,2 @@
+class NotEnoughMoney < RuntimeError
+end
