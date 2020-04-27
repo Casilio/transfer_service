@@ -1,0 +1,16 @@
+
+development: &development
+  adapter: mysql2
+  database: transfer_develop
+  username: root
+  password:
+  port: 3306
+  host: 127.0.0.1
+
+test:
+  <<: *development
+  database: transfer_test
+
+production:
+  <<: *development
+  database: transfer_production
