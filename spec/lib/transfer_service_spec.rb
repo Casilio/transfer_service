@@ -1,5 +1,5 @@
 require 'rails_helper'
-require 'transfer_service' # autoload?
+require 'transfer_service'
 
 describe TransferService do
   before(:each) do
@@ -7,7 +7,7 @@ describe TransferService do
     @user2 = User.create(name: 'user2')
   end
 
-  context 'pass incorrect user ids' do
+  context 'receive invalid user ids' do
     it 'raises ActiveRecord::RecordNotFound' do
       expect { TransferService.call(nil, nil, 1) }.to raise_error(ActiveRecord::RecordNotFound)
       expect { TransferService.call(@user1.id, nil, 1) }.to raise_error(ActiveRecord::RecordNotFound)
@@ -17,7 +17,13 @@ describe TransferService do
 
   context 'not enough money on sender\'s balance' do
     it 'raises NotEnoughMoney' do
-      expect { TransferService.call(@user1.id, @user2.id, 30) }. to raise_error(NotEnoughMoney)
+      expect { TransferService.call(@user1.id, @user2.id, 30) }.to raise_error(NotEnoughMoney)
+    end
+  end
+
+  context 'receive negative amount' do
+    it 'raises RuntimeError' do
+      expect { TransferService.call(@user1.id, @user2.id, -20) }.to raise_error(RuntimeError, 'Amount can not be negative!')
     end
   end
 
@@ -27,6 +33,13 @@ describe TransferService do
 
       expect(@user1.reload.balance).to eq(10)
       expect(@user2.reload.balance).to eq(10)
+    end
+
+    it 'transfer all money' do
+      TransferService.call(@user1.id, @user2.id, 20)
+
+      expect(@user1.reload.balance).to be_zero
+      expect(@user2.reload.balance).to eq(20)
     end
   end
 end
